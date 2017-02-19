@@ -59,6 +59,7 @@ module Gritter
           value.each do |gflash_value|
             gritter_options = { :image => key, :title => titles[key], :nodom_wrap => nodom_wrap }
             if gflash_value.is_a?(Hash)
+              gflash_value.symbolize_keys!
               text = gflash_value.has_key?(:value) ? (gflash_value[:value] and gflash_value.delete(:value)) : nil
               gritter_options.merge!(gflash_value)
             else
