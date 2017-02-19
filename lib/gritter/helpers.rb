@@ -47,13 +47,14 @@ module Gritter
     end
     
     def gflash *args
+      flashes = []
+      options = args.extract_options!
+      nodom_wrap = options[:nodom_wrap]
+      options.delete(:nodom_wrap)
+
+      titles = gflash_titles(options)
+
       if session[:gflash].present?
-        options = args.extract_options!
-        nodom_wrap = options[:nodom_wrap]
-        options.delete(:nodom_wrap)
-        
-        titles = gflash_titles(options)
-        flashes = []
         session[:gflash].each do |key, value|
           key = key.to_sym
           value.each do |gflash_value|
@@ -69,7 +70,25 @@ module Gritter
           end
         end
         session[:gflash] = nil
+      end
+
+      # process the Rails'flash'
+      if Gritter.rails_flashes && flash.is_a?(Hash)
+        flash.each do |key, value|
+          key = key.to_sym
+          value.each do |gflash_value|
+            gritter_options = { :image => key, :title => titles[key], :nodom_wrap => nodom_wrap }
+            text = gflash_value
+            flashes.push(add_gritter(text, gritter_options))
+          end
+          flash[key] = nil
+        end
+      end
+
+      if flashes.length > 0
         options[:js] ? flashes.join("\n") : js(flashes).html_safe
+      else
+        ''
       end
     end
     
