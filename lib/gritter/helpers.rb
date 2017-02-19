@@ -73,16 +73,15 @@ module Gritter
       end
 
       # process the Rails'flash'
-      if Gritter.rails_flashes && flash.is_a?(Hash)
+      if Gritter.rails_flashes && flash.is_a?(ActionDispatch::Flash::FlashHash)
         flash.each do |key, value|
           key = key.to_sym
-          value.each do |gflash_value|
-            gritter_options = { :image => key, :title => titles[key], :nodom_wrap => nodom_wrap }
-            text = gflash_value
-            flashes.push(add_gritter(text, gritter_options))
-          end
-          flash[key] = nil
+          gritter_options = { :image => key, :title => titles[key], :nodom_wrap => nodom_wrap }
+          text = value
+          flashes.push(add_gritter(text, gritter_options))
         end
+        # remove all flashes
+        flash.discard
       end
 
       if flashes.length > 0
